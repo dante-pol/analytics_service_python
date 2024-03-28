@@ -1,6 +1,6 @@
 import numpy as np
-
-# Нам присылают файл parsing.txt
+import graphics
+import json
 
 
 def statistic_main(path: str) -> str:
@@ -9,7 +9,18 @@ def statistic_main(path: str) -> str:
     :param path: Строка, где указан пусть к файлу
     :return: Массив данных типа ndarray, записанный в файл. Возвращает путь к файлу
     """
-    pass
+    data_list = read_file(path)
+    data_array = make_array(data_list)
+    data_sum_playtime = summary_playtime(data_array)
+    graphics.players_times(data_sum_playtime)
+    data_avg_lvl = avg_lvl_playtime(data_array)
+    graphics.playtime(data_avg_lvl)
+    data_perc_win = perc_win_players(data_array)
+    graphics.rating_shares(data_perc_win)
+
+
+    return data_list
+
 
 def read_file(path: str) -> list:
     '''
@@ -17,8 +28,11 @@ def read_file(path: str) -> list:
     :param path: Строка, где указан пусть к файлу
     :return: Список с данными
     '''
-    pass
 
+    with open(path, 'r', encoding='utf8') as file:
+        reader = json.load(file)
+    data_list = convert_str_to_list(reader) # отсюда отредактировать работу с json
+    return data_list
 
 
 def convert_str_to_list(data: str) -> list:
@@ -27,15 +41,21 @@ def convert_str_to_list(data: str) -> list:
     :param data: датасет в формате строки
     :return:датасет в формате списка
     """
-    pass
+    data_list = data.split('\n')
+    for elem in data_list:
+        elem = elem.split(',')
+    return data_list
 
 
-def make_array(data: list) -> list:
+def make_array(data: list) -> np.array:
     '''
     Из списка через numpy конвертируем ndarray
     :param data: список данных в формате list
     :return: массив данных в формате ndarray
     '''
+
+    array = np.array(data)
+    return array
 
 
 def check_valid(data: list) -> bool:
@@ -44,6 +64,11 @@ def check_valid(data: list) -> bool:
     :param data: список данных в формате list
     :return: True, если елементов больше 10, и False, если меньше
     '''
+
+    is_valid = True
+    if len(data) < 10:
+        is_valid = False
+    return is_valid
 
 
 def summary_playtime(dataset: list) -> int:
@@ -68,3 +93,6 @@ def perc_win_players(dataset: list) ->float:
     :param dataset: массив данных в формате ndarray
     :return: процент игроков в формате float
     '''
+
+
+graphics.players_times(data)
