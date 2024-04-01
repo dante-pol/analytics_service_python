@@ -3,31 +3,40 @@ import graphics
 import json
 
 
-def statistic_main(path: str) -> str: # дописать, что возвращает
+def statistic_main(path: str) -> None:
     """
     Основная функция, состоящая из небольших функций по обработке данных.
     Если данных для анализа недостаточно, то возвращает None
     :param path: Строка, где указан пусть к файлу
-    :return: Массив данных типа ndarray, записанный в файл. Возвращает путь к файлу
+    :return: None
     """
-    data_list = read_file(path)
-    if not data_list:
-        return None
-
     data_sum_playtime = None
     data_avg_lvl = None
     data_perc_win = None
 
-    data_array = make_array(data_list)
-    data_sum_playtime = summary_playtime(data_array)
-    graphics.players_times(data_sum_playtime)           # в модуль graphics передается массив np.array
-    data_avg_lvl = avg_lvl_playtime(data_array)
-    graphics.playtime(data_avg_lvl)                     # в модуль graphics передается массив np.array
-    data_perc_win = perc_win_players(data_array)
-    graphics.rating_shares(data_perc_win)               # в модуль graphics передается массив np.array
+    data_list = read_file(path)
+    if data_list:
+        data_array = make_array(data_list)
+        data_sum_playtime = summary_playtime(data_array)
+        data_avg_lvl = avg_lvl_playtime(data_array)
+        data_perc_win = perc_win_players(data_array)
+
+    send_result_to_graphics(data_sum_playtime, data_avg_lvl, data_perc_win)
+
+    return None
 
 
-    return data_list
+def send_result_to_graphics(sum_time: np.array, avg_time: np.array, rating: np.array) -> None:
+    '''
+    Функция-передатчик результатов вычислений в модуль построения графиков
+    :param sum_time: суммарный плейтайм по всем игрокам
+    :param avg_time: средний плейтайм по уровням
+    :param rating: процент успешно прошедних игроков
+    :return: передает результаты в модуль построения графиков
+    '''
+    graphics.players_times(sum_time)
+    graphics.playtime(avg_time)
+    graphics.rating_shares(rating)
 
 
 def read_file(path: str):
@@ -84,27 +93,44 @@ def check_valid(data: list) -> bool:
     return is_valid
 
 
-def summary_playtime(data_array: np.array) -> int:
+def summary_playtime(data_array: np.array) -> np.array:
     '''
     Считает общий плейтайм для каждого игрока
     :param data_array: массив данных в формате ndarray
     :return: общий плейтайм в формате int
     '''
+    result = []
+    for i in range(1, len(data_array), 1):
+        result.append([data_array[i][0], np.sum(data_array[::, 1::])])
+
+    return np.array(result)
 
 
-def avg_lvl_playtime(data_array: np.array) ->float:
+def avg_lvl_playtime(data_array: np.array) ->np.array:
     '''
     Считает средний плейтайм за каждый уровень по всем игрокам
     :param data_array: массив данных в формате ndarray
     :return: стреднее арифметическое в формате float
     '''
+    result = []
+    count_lvl = len(data_array[0] - 1)
+    for i in range(1, count_lvl, 1):
+        result.append([i, np.sum(data_array[::, [i]]) / count_lvl])
+
+    return np.array(result)
 
 
-def perc_win_players(data_array: np.array) ->float:
+def perc_win_players(data_array: np.array) -> np.array:
     '''
     Считает, сколько в среднем игроков успешно прошли данный уровень, выражается в %
     :param data_array: массив данных в формате ndarray
     :return: процент игроков в формате float
     '''
+    result = []
+    count_lvl = len(data_array[0] - 1)
+    for i in range(1, count_lvl, 1):
+        result.append([i, (np.sum(data_array[::, [i]]) / count_lvl) / len(data_array) * 100])
+
+    return np.array(result)
 
 
